@@ -44,6 +44,6 @@ jobs:
         with:
           name: AnyPS5-Windows-Relinker
           path: |
-            build/tools/relinker.exe
+            build/**/*.exe
             build/**/*.dll
-          if-no-files-found: warn
+          if-no-files-found: error
