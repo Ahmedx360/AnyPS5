@@ -1,0 +1,49 @@
+name: Build AnyPS5 (Windows)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4.2.2
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Setup MSYS2 UCRT64 Environment
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-pkgconf
+            git
+
+      - name: Ensure Submodules are Updated
+        shell: msys2 {0}
+        run: git submodule update --init --recursive
+
+      - name: Configure CMake
+        shell: msys2 {0}
+        run: cmake -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build AnyPS5
+        shell: msys2 {0}
+        run: cmake --build build --config Release
+
+      - name: Upload Windows Binary Artifact
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: AnyPS5-Windows-Relinker
+          path: |
+            build/**/*.exe
+            build/**/*.dll
+          if-no-files-found: error
